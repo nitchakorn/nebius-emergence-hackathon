@@ -25,6 +25,20 @@ from apps.clinicalq import config, dashboard_data, dashboard_render
 from apps.clinicalq.agent import DEFAULT_QUESTION, run
 from apps.clinicalq.craft_auth import build_oauth_provider
 
+# --- Streamlit Cloud secrets bootstrap ---
+# Locally, NEBIUS_API_KEY comes from the shell env and CRAFT auth from a token cache
+# file written by an interactive browser login. Neither exists on a hosted server (no
+# shell env, and no browser reachable from it for the OAuth callback), so both are
+# seeded from Streamlit secrets here instead — the deployed app runs under the
+# operator's own CRAFT session rather than asking each visitor to log in.
+try:
+    if "NEBIUS_API_KEY" in st.secrets:
+        os.environ.setdefault("NEBIUS_API_KEY", st.secrets["NEBIUS_API_KEY"])
+    if "CRAFT_TOKEN_CACHE_JSON" in st.secrets and not config.TOKEN_CACHE_PATH.exists():
+        config.TOKEN_CACHE_PATH.write_text(st.secrets["CRAFT_TOKEN_CACHE_JSON"])
+except Exception:
+    pass  # no secrets.toml (local dev) — fall back to env vars / existing token cache
+
 # (button label, question) — reuses app.py's EXAMPLE_QUESTIONS verbatim where a question
 # maps 1:1 to a dashboard section, plus one new genomics-scoped question.
 QUICK_ASKS = [
