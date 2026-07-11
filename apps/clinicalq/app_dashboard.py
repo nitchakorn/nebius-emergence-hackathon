@@ -117,20 +117,21 @@ if refresh_clicked or snapshot is None:
         finally:
             progress_box.empty()
 
-# --- dashboard ---
-if snapshot:
-    st.iframe(dashboard_render.render_html(snapshot), height=1350)
-else:
-    st.warning("No snapshot available. Click **Fetch now** above (requires CRAFT OAuth — see sidebar).")
-
-# --- specimen ledger: per-patient imaging + mutations + protein + purity, filterable ---
+# --- specimen ledger: per-patient table, mutations, protein, purity, imaging links ---
+# This is the primary view — the actual per-patient data and imaging links, not an
+# aggregate chart. It's what a researcher wants in front of them first.
 _LEDGER_PATH = Path(__file__).parent / "kirc_ledger.html"
 if _LEDGER_PATH.exists():
-    with st.expander(
-        "🔬 Specimen ledger — imaging, mutations, protein, purity (518 patients)",
-        expanded=False,
-    ):
-        st.iframe(_LEDGER_PATH, height=1100)
+    st.iframe(_LEDGER_PATH, height=1200)
+else:
+    st.warning("Specimen ledger not found — expected apps/clinicalq/kirc_ledger.html.")
+
+# --- cohort snapshot (aggregate charts) — collapsed, still used as context below ---
+if snapshot:
+    with st.expander("📊 Cohort snapshot (aggregate charts)", expanded=False):
+        st.iframe(dashboard_render.render_html(snapshot), height=1350)
+else:
+    st.warning("No snapshot available. Click **Fetch now** above (requires CRAFT OAuth — see sidebar).")
 
 st.divider()
 
