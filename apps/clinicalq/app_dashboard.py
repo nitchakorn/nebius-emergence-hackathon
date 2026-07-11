@@ -90,6 +90,15 @@ async def _check_connection() -> str:
             return result.content[0].text
 
 
+def _describe_error(e: BaseException) -> str:
+    """asyncio TaskGroups (anyio, used by the mcp SDK) wrap real failures in an
+    ExceptionGroup — str(e) on those just says "unhandled errors in a TaskGroup
+    (N sub-exception)" with no detail. Unwrap it so the actual cause is visible."""
+    if isinstance(e, BaseExceptionGroup):
+        return "; ".join(_describe_error(sub) for sub in e.exceptions)
+    return f"{type(e).__name__}: {e}"
+
+
 with st.sidebar:
     st.header("Connection")
     st.write("Complete OAuth once before running (opens a browser tab).")
@@ -98,7 +107,8 @@ with st.sidebar:
             try:
                 st.success(f"Connected: {asyncio.run(_check_connection())}")
             except Exception as e:
-                st.error(f"Connection failed: {e}")
+                st.error(f"Connection failed: {_describe_error(e)}")
+                st.exception(e)
 
 # --- snapshot: load cached, or fetch fresh on first load / explicit refresh ---
 if "snapshot" not in st.session_state:
@@ -127,7 +137,8 @@ if refresh_clicked or snapshot is None:
             dashboard_data.save_snapshot(snapshot)
             st.session_state["snapshot"] = snapshot
         except Exception as e:
-            st.error(f"Couldn't fetch the snapshot: {e}")
+            st.error(f"Couldn't fetch the snapshot: {_describe_error(e)}")
+            st.exception(e)
         finally:
             progress_box.empty()
 
