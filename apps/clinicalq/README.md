@@ -16,6 +16,11 @@ model is given the raw MCP tools and a goal; *it* decides which schema to explor
 questions to ask, when to run each query, when to chart, and when it has enough to write
 the report.
 
+**Want this for a different cancer type?** Nothing here is kidney-specific — see
+[`BUILD_YOUR_OWN_COHORT.md`](./BUILD_YOUR_OWN_COHORT.md) for a copy-paste Claude Code
+prompt that re-derives the whole thing (coverage numbers, driver genes, specimen ledger)
+for any TCGA cohort.
+
 ---
 
 ## What it does
